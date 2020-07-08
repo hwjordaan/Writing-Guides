@@ -1,0 +1,56 @@
+\documentclass[12pt, float=false, crop=true]{standalone}
+\usepackage{import}
+\usepackage{tikz}
+\usepackage{pgfplots}
+
+\usetikzlibrary{shapes, shadows, arrows, arrows.meta}
+\usetikzlibrary{fit}
+
+\usepackage{xcolor}
+\definecolor{light_blue}{RGB}{222,235,247}
+\definecolor{faded_red}{RGB}{203,24,29} % #CB181D
+
+\begin{document}
+
+\footnotesize
+
+% Define distances
+\def\blockheight{2.5em}
+\def\blockwidth{2.5em}
+\def\nodesep{4*\blockwidth}
+
+\begin{tikzpicture}[>={Stealth[inset=0pt,length=3pt,angle'=60,round]},
+text_block/.style = {draw, fill=light_blue, text centered, inner sep=0pt, text width=2*\blockwidth, minimum height=\blockheight},
+port/.style = {inner sep=0pt, font=\tiny},
+sum/.style n args = {4}{draw, circle, minimum size=1.5em, alias=sum,
+	append after command = {
+		node at (sum.north) [port, below=1pt] {$#1$}
+		node at (sum.west) [port, right=1pt] {$#2$}
+		node at (sum.south) [port, above=1pt] {$#3$}
+		node at (sum.east) [port, left=1pt] {$#4$}
+	}
+}
+]
+%===============================================================================
+\node[text centered] (ref) {$r$};
+
+\path(ref)+(0.5*\nodesep, 0.25*\blockheight) node (controller) [text_block] {Controller};
+\path(controller)+(\nodesep, 0) node (plant) [text_block] {Plant};
+\path(controller)+(0.25*\nodesep, -1.5*\blockheight) node (adaptive) [text_block] {Adaptive Law};
+\path(plant)+(0, 1.5*\blockheight) node (reference) [text_block] {Reference Model};
+\path(plant)+(0.75*\nodesep, 0) node (error) [sum={-}{+}{}{}] {};
+
+%===============================================================================
+\path[draw,->] (ref.east) -- ([yshift=-0.25*\blockheight]controller.west);
+\path[draw,->] (controller.east) -- node[anchor=south] {$u_p$} (plant.west);
+\path[draw,->] (plant.east) -- node[anchor=south, pos=0.75] {$y_p$} (error.west);
+\path[draw,->] ([xshift=0.05*\nodesep]ref.east) |- (reference.west);
+\path[draw,->] (reference.east) -| node[anchor=south, pos=0.32] {$y_m$} (error.north);
+\path[draw,->] ([xshift=0.35*\nodesep]controller.east) |- ([yshift=0.25*\blockheight]adaptive.east);
+\path[draw,->] ([xshift=0.2*\nodesep]plant.east) |- (adaptive.east);
+\path[draw,->] ([xshift=0.2*\nodesep]plant.east) |- ([yshift=0.75*\blockheight, xshift=-0.3*\blockwidth]controller.west) |- ([yshift=0.25*\blockheight]controller.west);
+\path[draw,->] (error.east) -- node[anchor=south] {$e_1$} ([xshift=0.1*\nodesep]error.east) |- ([yshift=-0.25*\blockheight]adaptive.east);
+
+\end{tikzpicture}
+
+\end{document}
